@@ -9,6 +9,8 @@
   var showingHTML = false;
   var onLoadCount = -1;
   var maxOnLoadCount = 500;
+  var contentDocument;
+  var editor;
   
   // Check that this is the main page and not one of the iframes.
   // Don't do anything for inside the iframes.
@@ -82,7 +84,7 @@
     textArea.setAttribute('class', 'v-Text-input');
     textArea.style.height = rect.height + 'px';
     
-    var html = win.editor.getHTML();
+    var html = contentDocument.body.innerHTML;
     html = html.replace(/<\/div>/g, '</div>\n');
     
     textArea.value = html;
@@ -104,7 +106,9 @@
     innerHTML = innerHTML.replace(/&lt;/g, '<');
     innerHTML = innerHTML.replace(/&gt;/g, '>');
     
-    win.editor.setHTML(innerHTML);
+    editor = new win.Squire(contentDocument);
+    editor.setHTML(innerHTML);
+    editor.destroy();
     composeDiv.removeChild(win.document.getElementById('RichTextRawHtmlLabel'));
   };
   
@@ -127,7 +131,7 @@
     link.setAttribute('tabindex', '-1');
     link.innerHTML = 'Toggle &lt;/&gt;';
     link.onclick = function() {
-      if (!win.editor) {
+      if (!editor) {
         win.alert('editor not loaded yet');
         return;
       }
@@ -142,9 +146,11 @@
     div.appendChild(link);
     
     iframe.onload = function() {
+      contentDocument = iframe.contentDocument;
       var body = iframe.contentDocument.body.innerHTML;
-      win.editor = new win.Squire(iframe.contentDocument);
-      win.editor.setHTML(body);
+      editor = new win.Squire(contentDocument);
+      editor.setHTML(body);
+      editor.destroy();
     };
   };
   
